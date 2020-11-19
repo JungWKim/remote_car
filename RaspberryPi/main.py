@@ -4,11 +4,8 @@ import sys
 import termios
 import tty
 import threading
+import serial
 
-pulseCountL = 0
-pulseCountR = 0
-encoderL = 10
-encoderR = 9
 ENA = 2
 IN1 = 3
 IN2 = 4
@@ -17,21 +14,14 @@ IN3 = 17
 IN4 = 27
 speedL = 40
 speedR = 40
-prev_time = 0.0
-ppr = 235
 Kp = 0.01
-target_rpm_gap = 500
 steering_signal = 0
 
 def speed_calibration():
-    global prev_time, pulseCountL, pulseCountR, steering_signal
+    global steering_signal, speedL, speedR
     while True:
-        current_time = time.time()
-        time_gap = current_time - prev_time
-        if time_gap >= 0.500:
-            prev_time = current_time
-            rpmL = int((pulseCountL / ppr) * (60.0 / time_gap))
-            rpmR = int((pulseCountR / ppr) * (60.0 / time_gap))
+        error = ser.readline().decode('utf-8')
+        if error:
             if steering_signal is 1:
                 error = rpmL - rpmR
                 if error > 0:
@@ -56,23 +46,12 @@ def speed_calibration():
                 elif error < 0:
                     Pcontrol = Kp * error
                     speedL += Pcontrol
-            pulseCountL = pulseCountR = 0
 
 
 def timer_thread():
     thread = threading.Thread(target = speed_calibration)
     thread.daemon = True
     thread.start()
-
-
-def pulseCounterL(channel):
-    global pulseCountL
-    pulseCountL += 1
-
-
-def pulseCounterR(channel):
-    global pulseCountR
-    pulseCountR += 1
 
 
 def settings():
@@ -83,15 +62,11 @@ def settings():
     GPIO.setup(ENA, GPIO.OUT)
     GPIO.setup(IN1, GPIO.OUT)
     GPIO.setup(IN2, GPIO.OUT)
-    GPIO.setup(encoderL, GPIO.IN)
-    GPIO.add_event_detect(encoderL, GPIO.RISING, callback = pulseCounterL)
 
     #Right side
     GPIO.setup(IN3, GPIO.OUT)
     GPIO.setup(IN4, GPIO.OUT)
     GPIO.setup(ENB, GPIO.OUT)
-    GPIO.setup(encoderR, GPIO.IN)
-    GPIO.add_event_detect(encoderR, GPIO.RISING, callback = pulseCounterR)
 
     global pwmL, pwmR
     pwmL = GPIO.PWM(ENA, 50)#frequency
@@ -99,6 +74,8 @@ def settings():
     pwmR = GPIO.PWM(ENB, 50)
     pwmR.start(0)#frequency and duty cycle are different!!!
 
+    global ser
+    ser = serial.Serial("/dev/ttyUSB0", 57600)
     timer_thread()
 
 
@@ -236,8 +213,6 @@ def main():
             print("")
             print("Left speed :", speedL)
             print("Right speed :", speedR)
-            print("Left pulse :", pulseCountL)
-            print("Right pulse :", pulseCountR)
             print("")
 
     except KeyboardInterrupt:
