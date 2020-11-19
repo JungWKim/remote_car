@@ -18,14 +18,15 @@ IN4 = 27
 speedL = 40
 speedR = 40
 prev_time = 0.0
-ppr = 11
+ppr = 235
 Kp = 0.01
 target_rpm_gap = 500
+steering_signal = 0
 
 def speed_calibration():
-    global prev_time, pulseCountL, pulseCountR
+    global prev_time, pulseCountL, pulseCountR, steering_signal
     while True:
-        current_time = time.process_time()
+        current_time = time.time()
         time_gap = current_time - prev_time
         if time_gap >= 0.500:
             prev_time = current_time
