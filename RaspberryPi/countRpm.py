@@ -24,15 +24,21 @@ GPIO.setup(encoderL, GPIO.IN)
 GPIO.add_event_detect(encoderL, GPIO.RISING, callback = pulseCounterL)
 
 pwmL = GPIO.PWM(ENA, 50)
-pwmL.start(100)
+pwmL.start(50)
 GPIO.output(IN1, True)
 GPIO.output(IN2, False)
 
 while True:
-    current_time = time.time()
-    time_gap = current_time - prev_time
-    if time_gap >= 0.500:
-        prev_time = current_time
-        rpmL = int((pulseCountL / ppr) * (60.0 / time_gap))
-        print("rpm :", rpmL)
-        pulseCountL = 0
+#    current_time = time.time()
+#    time_gap = current_time - prev_time
+#    if time_gap >= 0.500:
+#        prev_time = current_time
+#        rpmL = int((pulseCountL / ppr) * (60.0 / time_gap))
+#        pulseCountL = 0
+#        print("rpm :", rpmL)
+    try:
+        pass
+    except KeyboardInterrupt:
+        pwmL.ChangeDutyCycle(0)
+        pwmL.stop()
+        GPIO.cleanup()

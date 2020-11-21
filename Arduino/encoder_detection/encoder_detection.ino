@@ -1,13 +1,12 @@
 #include <MsTimer2.h>
 
-#define encoderL 8
-#define encoderR 9
+#define encoderL 18
+#define encoderR 21
 
 const int ppr = 235;
-const int target_rpm_gap = 500;
-int pulseCountL = 0;
-int pulseCountR = 0;
-int rpmL, rpmR;
+volatile int pulseCountL = 0;
+volatile int pulseCountR = 0;
+volatile int rpmL, rpmR;
 
 void pulseCounterL() { pulseCountL++; }
 void pulseCounterR() { pulseCountR++; }
@@ -16,6 +15,8 @@ void rpmCalculation()
 {
   rpmL = (int)((pulseCountL / ppr) * (60.0 / 0.5));
   rpmR = (int)((pulseCountR / ppr) * (60.0 / 0.5));
+
+  Serial.println(rpmL - rpmR);
 
   pulseCountL = 0;
   pulseCountR = 0;
@@ -31,7 +32,7 @@ void setup() {
 
   MsTimer2::set(500, rpmCalculation);
   MsTimer2::start();
-  Serial.begin(57600);
+  Serial.begin(9600);
 }
 
 void loop() {
