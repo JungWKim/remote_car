@@ -17,46 +17,38 @@ speedL = 40
 speedR = 40
 Kp = 0.01
 steering_signal = 0
-pulseCountL = 0
 target_rpm_gap = 122
-
-def pulseCounterL(channel):
-    global pulseCountL
-    pulseCountL += 1
-    print("pulseCountL :", pulseCountL)
-
 
 def speed_calibration():
     global steering_signal, speedL, speedR, target_rpm_gap
-#    while True:
-#        actual_rpm_gap = ser.readline().decode('utf-8')
-#        if actual_rpm_gap:
-#            if steering_signal is 1:
-#                error = actual_rpm_gap
-#                if error > 0:
-#                    Pcontrol = Kp * error
-#                    speedR += Pcontrol
-#                elif error < 0:
-#                    Pcontrol = Kp * error
-#                    speedL += Pcontrol
-#            elif steering_signal is 2:
-#                actaul_rpm_gap = actual_rpm_gap * (-1)
-#                error = actual_rpm_gap - target_rpm_gap
-#                if error > 0:
-#                    Pcontrol = Kp * error
-#                    speedR -= Pcontrol
-#                elif error < 0:
-#                    Pcontrol = Kp * error
-#                    speedR += Pcontrol
-#            elif steering_signal is 3:
-#                error = actual_rpm_gap - target_rpm_gap
-#                if error > 0:
-#                    Pcontrol = Kp * error
-#                    speedL -= Pcontrol
-#                elif error < 0:
-#                    Pcontrol = Kp * error
-#                    speedL += Pcontrol
-    pass
+    while True:
+        actual_rpm_gap = int(ser.readline().decode('utf-8'))
+        if actual_rpm_gap:
+            if steering_signal is 1:
+                error = actual_rpm_gap
+                if error > 0:
+                    Pcontrol = Kp * error
+                    speedR += Pcontrol
+                elif error < 0:
+                    Pcontrol = Kp * error
+                    speedL += Pcontrol
+            elif steering_signal is 2:
+                actaul_rpm_gap = actual_rpm_gap * (-1)
+                error = actual_rpm_gap - target_rpm_gap
+                if error > 0:
+                    Pcontrol = Kp * error
+                    speedR -= Pcontrol
+                elif error < 0:
+                    Pcontrol = Kp * error
+                    speedR += Pcontrol
+            elif steering_signal is 3:
+                error = actual_rpm_gap - target_rpm_gap
+                if error > 0:
+                    Pcontrol = Kp * error
+                    speedL -= Pcontrol
+                elif error < 0:
+                    Pcontrol = Kp * error
+                    speedL += Pcontrol
 
 
 def timer_thread():
@@ -74,7 +66,6 @@ def settings():
     GPIO.setup(IN1, GPIO.OUT)
     GPIO.setup(IN2, GPIO.OUT)
     GPIO.setup(encoderL, GPIO.IN)
-    GPIO.add_event_detect(10, GPIO.RISING, callback=pulseCounterL)
 
     #Right side
     GPIO.setup(IN3, GPIO.OUT)
