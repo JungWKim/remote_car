@@ -1,18 +1,13 @@
 import RPi.GPIO as GPIO
 import time
+import serial
 
-prev_time = 0.0
-encoderL = 10
-pulseCountL = 0
 ENA = 2
 IN1 = 3
 IN2 = 4
-ppr = 235
-
-def pulseCounterL(channel):
-    global pulseCountL
-    pulseCountL += 1
-    print("pulse count :", pulseCountL)
+ENB = 22
+IN3 = 17
+IN4 = 27
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
@@ -20,13 +15,19 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(ENA, GPIO.OUT)
 GPIO.setup(IN1, GPIO.OUT)
 GPIO.setup(IN2, GPIO.OUT)
-GPIO.setup(encoderL, GPIO.IN)
-GPIO.add_event_detect(encoderL, GPIO.RISING, callback = pulseCounterL)
+GPIO.setup(ENB, GPIO.OUT)
+GPIO.setup(IN3, GPIO.OUT)
+GPIO.setup(IN4, GPIO.OUT)
 
 pwmL = GPIO.PWM(ENA, 50)
-pwmL.start(50)
+pwmL.start(60)
+pwmR = GPIO.PWM(ENB, 50)
+pwmR.start(80)
 GPIO.output(IN1, True)
 GPIO.output(IN2, False)
+GPIO.output(IN3, True)
+GPIO.output(IN4, False)
+
 
 while True:
 #    current_time = time.time()

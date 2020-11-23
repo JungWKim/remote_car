@@ -3,20 +3,29 @@
 #define encoderL 18
 #define encoderR 21
 
-const int ppr = 235;
-volatile int pulseCountL = 0;
-volatile int pulseCountR = 0;
-volatile int rpmL, rpmR;
+const float ppr = 235;
+volatile float pulseCountL = 0;
+volatile float pulseCountR = 0;
+volatile float rpmL, rpmR;
 
 void pulseCounterL() { pulseCountL++; }
 void pulseCounterR() { pulseCountR++; }
 
 void rpmCalculation()
 {
-  rpmL = (int)((pulseCountL / ppr) * (60.0 / 0.5));
-  rpmR = (int)((pulseCountR / ppr) * (60.0 / 0.5));
+  rpmL = (pulseCountL / ppr) * (60.0 / 0.5);
+  rpmR = (pulseCountR / ppr) * (60.0 / 0.5);
 
   Serial.println(rpmL - rpmR);
+
+//  Serial.print("Left pulse: ");
+//  Serial.println(pulseCountL);
+//  Serial.print("Left rpm : ");
+//  Serial.println(rpmL);
+//  Serial.print("Right pulse: ");
+//  Serial.println(pulseCountR);
+//  Serial.print("Right rpm : ");
+//  Serial.println(rpmR);
 
   pulseCountL = 0;
   pulseCountR = 0;

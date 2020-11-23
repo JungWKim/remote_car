@@ -13,48 +13,68 @@ ENB = 22
 IN3 = 17
 IN4 = 27
 encoderL = 10
-speedL = 40
-speedR = 40
-Kp = 0.01
+speedL = 60
+speedR = 60
+Kp = 0.1
 steering_signal = 0
-target_rpm_gap = 122
+target_rpm_gap = 67
+actual_rpm_gap = ""
+
+def speed_limit():
+    global speedL, speedR
+    if speedL > 100:
+        speedL = 100
+    if speedR > 100:
+        speedR = 100
+    if speedL < 10:
+        speedL = 10
+    if speedR < 10:
+        speedR = 10
+
 
 def speed_calibration():
-    global steering_signal, speedL, speedR, target_rpm_gap
+    global steering_signal, speedL, speedR, target_rpm_gap, actual_rpm_gap
     while True:
-        actual_rpm_gap = int(ser.readline().decode('utf-8'))
-        if actual_rpm_gap:
+        try:
+            actual_rpm_gap = ser.readline().decode('utf-8')
+            actual_rpm_gap = actual_rpm_gap.rstrip('\n')
+            actual_rpm_gap = actual_rpm_gap.rstrip('\r')
+            actual_rpm_gap = int(float(actual_rpm_gap))
             if steering_signal is 1:
                 error = actual_rpm_gap
-                if error > 0:
+                if error > 1:
                     Pcontrol = Kp * error
                     speedR += Pcontrol
-                elif error < 0:
+                elif error < -1:
                     Pcontrol = Kp * error
                     speedL += Pcontrol
             elif steering_signal is 2:
                 actaul_rpm_gap = actual_rpm_gap * (-1)
                 error = actual_rpm_gap - target_rpm_gap
-                if error > 0:
+                if error > 1:
                     Pcontrol = Kp * error
                     speedR -= Pcontrol
-                elif error < 0:
+                elif error < -1:
                     Pcontrol = Kp * error
                     speedR += Pcontrol
             elif steering_signal is 3:
                 error = actual_rpm_gap - target_rpm_gap
-                if error > 0:
+                if error > 1:
                     Pcontrol = Kp * error
                     speedL -= Pcontrol
-                elif error < 0:
+                elif error < -1:
                     Pcontrol = Kp * error
                     speedL += Pcontrol
+            speed_limit()
+            changeSpeed()
+        except serial.SerialException as e:
+            pass
 
 
 def timer_thread():
-    thread = threading.Thread(target = speed_calibration)
-    thread.daemon = True
-    thread.start()
+    thread1 = threading.Thread(target = speed_calibration)
+    thread1.daemon = True
+    thread1.start()
 
 
 def settings():
@@ -84,7 +104,7 @@ def settings():
 
 
 def show_usage():
-    print("----------How to Use-----------")
+    print("---------- How to Use -----------")
     print("")
     print("          Q  W  E ")
     print("                           U")
@@ -138,7 +158,7 @@ def backward():
 
 
 def main():
-    global speedL, speedR, key, steering_signal
+    global speedL, speedR, key, steering_signal, actual_rpm_gap
 
     show_usage()
     settings()
@@ -171,19 +191,19 @@ def main():
                 steering_signal = 1
             elif key is 'q':
                 forward()
-                changeSpeed(10, 50)
+                changeSpeed(20, 60)
                 steering_signal = 2
             elif key is 'e':
                 forward()
-                changeSpeed(50, 10)
+                changeSpeed(60, 20)
                 steering_signal = 3
             elif key is 'z':
                 backward()
-                changeSpeed(10, 50)
+                changeSpeed(20, 60)
                 steering_signal = 2
             elif key is 'c':
                 backward()
-                changeSpeed(50, 10)
+                changeSpeed(60, 20)
                 steering_signal = 3
             elif key is 's':
                 changeSpeed(0, 0)
@@ -213,7 +233,10 @@ def main():
                 break
             else:
                 print("Inappropriate Key!!")
-            print("[Pressed] >>>", key)
+            print("[Pressed]", key)
+            print("[rpm gap]", actual_rpm_gap)
+            print("[Left speed]", speedL)
+            print("[Right speed]", speedR)
             print("Press any keys......")
             print("")
 
