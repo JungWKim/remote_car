@@ -32,6 +32,11 @@ def speed_limit():
         speedR = 10
 
 
+def changeSpeed(left = speedL, right = speedR):
+    pwmL.ChangeDutyCycle(left)
+    pwmR.ChangeDutyCycle(right)
+
+
 def speed_calibration():
     global steering_signal, speedL, speedR, target_rpm_gap, actual_rpm_gap
     while True:
@@ -46,26 +51,30 @@ def speed_calibration():
                     Pcontrol = Kp * error
                     speedR += Pcontrol
                 elif error < -1:
-                    Pcontrol = Kp * error
+                    Pcontrol = abs(Kp * error)
                     speedL += Pcontrol
+                speed_limit()
             elif steering_signal is 2:
-                actaul_rpm_gap = actual_rpm_gap * (-1)
                 error = actual_rpm_gap - target_rpm_gap
                 if error > 1:
                     Pcontrol = Kp * error
                     speedR -= Pcontrol
                 elif error < -1:
-                    Pcontrol = Kp * error
+                    Pcontrol = abs(Kp * error)
                     speedR += Pcontrol
+                speed_limit()
             elif steering_signal is 3:
                 error = actual_rpm_gap - target_rpm_gap
                 if error > 1:
                     Pcontrol = Kp * error
                     speedL -= Pcontrol
                 elif error < -1:
-                    Pcontrol = Kp * error
+                    Pcontrol = abs(Kp * error)
                     speedL += Pcontrol
-            speed_limit()
+                speed_limit()
+            elif steering_signal is 0:
+                speedL = 0
+                speedR = 0
             changeSpeed()
         except serial.SerialException as e:
             pass
@@ -138,11 +147,6 @@ def getch():
     return ch
 
 
-def changeSpeed(left = speedL, right = speedR):
-    pwmL.ChangeDutyCycle(left)
-    pwmR.ChangeDutyCycle(right)
-
-
 def forward():
     GPIO.output(IN1, True)
     GPIO.output(IN2, False)
@@ -207,6 +211,7 @@ def main():
                 steering_signal = 3
             elif key is 's':
                 changeSpeed(0, 0)
+                steering_signal = 0
             elif key is 'u':
                 speedL += 10
                 speedR += 10
