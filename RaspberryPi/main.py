@@ -13,7 +13,7 @@ IN2 = 4
 ENB = 22
 IN3 = 17
 IN4 = 27
-Kp = 1.0
+Kp = 0.8
 speedL = 0
 speedR = 0
 target_rpm_gap = 67
@@ -48,7 +48,7 @@ def speed_calibration():
                     elif error < -1:
                         speedL += abs(Kp * error)
                 elif steering_signal is 2:
-                    error = actual_rpm_gap - target_rpm_gap
+                    error = abs(actual_rpm_gap) - target_rpm_gap
                     if error > 1:
                         speedR -= Kp * error
                     elif error < -1:
